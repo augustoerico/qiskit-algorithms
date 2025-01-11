@@ -13,6 +13,7 @@
 """Test the QAOA algorithm."""
 
 import unittest
+import warnings
 from functools import partial
 from test import QiskitAlgorithmsTestCase
 
@@ -67,6 +68,10 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         super().setUp()
         self.seed = 10598
         algorithm_globals.random_seed = self.seed
+
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+
         self.sampler = Sampler()
 
     @idata(
