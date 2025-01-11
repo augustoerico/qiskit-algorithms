@@ -32,6 +32,11 @@ from qiskit_algorithms.minimum_eigensolvers import QAOA
 from qiskit_algorithms.optimizers import COBYLA, NELDER_MEAD
 from qiskit_algorithms.utils import algorithm_globals
 
+# Dependencies required for testing in a Reference Backend
+from qiskit.primitives.backend_sampler import BackendSampler
+from qiskit_aer import AerSimulator
+from qiskit_ibm_runtime.fake_provider.backends import FakeSherbrooke
+
 W1 = np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]])
 P1 = 1
 M1 = SparsePauliOp.from_list(
@@ -72,7 +77,16 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
+        reference_backend = FakeSherbrooke()
+        ideal_backend = AerSimulator.from_backend(reference_backend)
+        ideal_backend.set_options(method='statevector', noise_model=None)
+
         self.sampler = Sampler()
+        self.sampler_ideal = BackendSampler(backend=ideal_backend)
+
+        # self.sampler = BackendSampler(backend=reference_backend)
+        # to run a single test case in ddt, add _<1, 2, 3...>:
+        #   python -m unittest test.transpiled_sherbrooke.minimum_eigensolvers.test_qaoa.TestQAOA.test_qaoa_1
 
     @idata(
         [
@@ -87,7 +101,9 @@ class TestQAOA(QiskitAlgorithmsTestCase):
 
         qubit_op, _ = self._get_operator(w)
 
-        qaoa = QAOA(self.sampler, COBYLA(), reps=reps, mixer=mixer)
+        qaoa = QAOA(
+            self.sampler,
+            COBYLA(), reps=reps, mixer=mixer)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
 
         x = self._sample_most_likely(result.eigenstate)
