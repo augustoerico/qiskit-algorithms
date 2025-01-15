@@ -15,6 +15,9 @@
 import unittest
 import warnings
 from functools import partial
+from pathlib import Path
+from typing import List
+
 from test import QiskitAlgorithmsTestCase
 
 import numpy as np
@@ -64,6 +67,19 @@ S2 = {"1011", "0100"}
 
 CUSTOM_SUPERPOSITION = [1 / np.sqrt(15)] * 15 + [0]
 
+results_folder_path: Path = \
+    Path(__file__).parent.joinpath('results/test_qaoa')
+
+def write_iteration_to_file(
+        sampler_type: str, # ideal_sampler, sherbrooke_sampler_no_noise, sherbrooke_sampler
+        eval_count: int, params: List[float],
+        value: np.complex128, _):
+    line = f'{eval_count},' \
+        + f'{','.join(str(p) for p in params)},' \
+        + f'{np.str_(value)}\n'
+    file_path = results_folder_path.joinpath(f'{sampler_type}.csv')
+    with open(file_path, 'a') as f:
+        f.write(line)
 
 @ddt
 class TestQAOA(QiskitAlgorithmsTestCase):
@@ -101,14 +117,26 @@ class TestQAOA(QiskitAlgorithmsTestCase):
 
         qubit_op, _ = self._get_operator(w)
 
+        callback = partial(write_iteration_to_file, 'ideal_sampler')
+
         qaoa = QAOA(
             self.sampler,
-            COBYLA(), reps=reps, mixer=mixer)
+            COBYLA(), reps=reps, mixer=mixer,
+            callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
 
         x = self._sample_most_likely(result.eigenstate)
         graph_solution = self._get_graph_solution(x)
         self.assertIn(graph_solution, solutions)
+
+        # qaoa_ideal = QAOA(
+        #     self.sampler_ideal,
+        #     COBYLA(), reps=reps, mixer=mixer)
+        # result_ideal = qaoa_ideal.compute_minimum_eigenvalue(operator=qubit_op)
+        
+        # x = self._sample_most_likely(result_ideal.eigenstate)
+        # graph_solution = self._get_graph_solution(x)
+        # self.assertIn(graph_solution, solutions)
 
     @idata(
         [
