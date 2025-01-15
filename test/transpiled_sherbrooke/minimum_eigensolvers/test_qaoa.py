@@ -14,6 +14,7 @@
 
 import unittest
 import warnings
+from copy import deepcopy
 from functools import partial
 from pathlib import Path
 from typing import List
@@ -93,12 +94,13 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         warnings.filterwarnings("ignore", category=DeprecationWarning)
         warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
 
-        reference_backend = FakeSherbrooke()
-        ideal_backend = AerSimulator.from_backend(reference_backend)
-        ideal_backend.set_options(method='statevector', noise_model=None)
+        reference_backend = AerSimulator.from_backend(FakeSherbrooke())
+
+        backend_without_noise = deepcopy(reference_backend)
+        backend_without_noise.set_options(method='statevector', noise_model=None)
 
         self.sampler = Sampler()
-        self.sampler_ideal = BackendSampler(backend=ideal_backend)
+        self.sampler_without_noise = BackendSampler(backend=backend_without_noise)
 
         # self.sampler = BackendSampler(backend=reference_backend)
         # to run a single test case in ddt, add _<1, 2, 3...>:
@@ -129,14 +131,16 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         graph_solution = self._get_graph_solution(x)
         self.assertIn(graph_solution, solutions)
 
-        # qaoa_ideal = QAOA(
-        #     self.sampler_ideal,
-        #     COBYLA(), reps=reps, mixer=mixer)
-        # result_ideal = qaoa_ideal.compute_minimum_eigenvalue(operator=qubit_op)
+        callback = partial(write_iteration_to_file, 'sampler_without_noise')
+        qaoa_without_noise = QAOA(
+            self.sampler_without_noise,
+            COBYLA(), reps=reps, mixer=mixer,
+            callback=callback)
+        result_ideal = qaoa_without_noise.compute_minimum_eigenvalue(operator=qubit_op)
         
-        # x = self._sample_most_likely(result_ideal.eigenstate)
-        # graph_solution = self._get_graph_solution(x)
-        # self.assertIn(graph_solution, solutions)
+        x = self._sample_most_likely(result_ideal.eigenstate)
+        graph_solution = self._get_graph_solution(x)
+        self.assertIn(graph_solution, solutions)
 
     @idata(
         [
