@@ -91,9 +91,7 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         self.seed = 10598
         algorithm_globals.random_seed = self.seed
 
-        warnings.filterwarnings("ignore", category=DeprecationWarning)
-        warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
-
+        # changing the backend
         reference_backend = AerSimulator.from_backend(FakeSherbrooke())
 
         backend_without_noise = deepcopy(reference_backend)
@@ -101,8 +99,10 @@ class TestQAOA(QiskitAlgorithmsTestCase):
 
         self.sampler = Sampler()
         self.sampler_without_noise = BackendSampler(backend=backend_without_noise)
-
         # self.sampler = BackendSampler(backend=reference_backend)
+        
+        # to run all:
+        #   python -m unittest test.transpiled_sherbrooke.minimum_eigensolvers.test_qaoa
         # to run a single test case in ddt, add _<1, 2, 3...>:
         #   python -m unittest test.transpiled_sherbrooke.minimum_eigensolvers.test_qaoa.TestQAOA.test_qaoa_1
 
