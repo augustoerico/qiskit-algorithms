@@ -86,6 +86,9 @@ class TestVQE(QiskitAlgorithmsTestCase):
         self.ry_wavefunction = TwoLocal(rotation_blocks="ry", entanglement_blocks="cz")
 
         reference_backend = AerSimulator.from_backend(FakeSherbrooke())
+        reference_backend.set_options(
+            device="GPU",
+            batched_shots_gpu=True)
         backend_without_noise = deepcopy(reference_backend)
         backend_without_noise.set_options(method='statevector', noise_model=None)
         self.estimator_without_noise = BackendEstimator(backend=backend_without_noise)
