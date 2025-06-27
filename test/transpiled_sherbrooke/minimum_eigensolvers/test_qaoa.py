@@ -13,7 +13,6 @@
 """Test the QAOA algorithm."""
 
 import unittest
-import warnings
 from copy import deepcopy
 from functools import partial
 from pathlib import Path
@@ -40,6 +39,7 @@ from qiskit_algorithms.utils import algorithm_globals
 from qiskit.primitives.backend_sampler import BackendSampler
 from qiskit_aer import AerSimulator
 from qiskit_ibm_runtime.fake_provider.backends import FakeSherbrooke
+from itertools import product
 
 W1 = np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]])
 P1 = 1
@@ -72,7 +72,7 @@ results_folder_path: Path = \
     Path(__file__).parent.joinpath('results/test_qaoa')
 
 def write_iteration_to_file(
-        sampler_type: str, # ideal_sampler, sherbrooke_sampler_no_noise, sherbrooke_sampler
+        sampler_type: str,
         eval_count: int, params: List[float],
         value: np.complex128, _):
     line = f'{eval_count},' \
@@ -82,6 +82,26 @@ def write_iteration_to_file(
     with open(file_path, 'a') as f:
         f.write(line)
 
+def simulators():
+    backend_with_noise = AerSimulator.from_backend(
+        FakeSherbrooke(), method='statevector',
+        device='GPU', batched_shots_gpu=True)
+
+    backend_without_noise = deepcopy(backend_with_noise)
+    backend_without_noise.set_options(noise_model=None)
+
+    ideal_sampler = Sampler(options={'type': 'ideal_sampler'})
+    sampler_without_noise = BackendSampler(
+        backend=backend_without_noise, options={'type': 'sampler_without_noise'})
+    sampler_with_noise = BackendSampler(
+        backend=backend_with_noise, options={'type': 'sampler_with_noise'})
+
+    return [
+        ideal_sampler,
+        sampler_without_noise,
+        sampler_with_noise
+    ]
+
 @ddt
 class TestQAOA(QiskitAlgorithmsTestCase):
     """Test QAOA with MaxCut."""
@@ -90,16 +110,6 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         super().setUp()
         self.seed = 10598
         algorithm_globals.random_seed = self.seed
-
-        # changing the backend
-        reference_backend = AerSimulator.from_backend(FakeSherbrooke())
-
-        backend_without_noise = deepcopy(reference_backend)
-        backend_without_noise.set_options(method='statevector', noise_model=None)
-
-        self.sampler = Sampler()
-        self.sampler_without_noise = BackendSampler(backend=backend_without_noise)
-        # self.sampler = BackendSampler(backend=reference_backend)
         
         # to run all:
         #   python -m unittest test.transpiled_sherbrooke.minimum_eigensolvers.test_qaoa
@@ -107,38 +117,30 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         #   python -m unittest test.transpiled_sherbrooke.minimum_eigensolvers.test_qaoa.TestQAOA.test_qaoa_1
 
     @idata(
-        [
-            [W1, P1, M1, S1],
-            [W2, P2, M2, S2],
-        ]
+        [*data, simulator] for data, simulator in product(
+            [
+                [W1, P1, M1, S1],
+                [W2, P2, M2, S2],
+            ],
+            simulators()
+        )
     )
     @unpack
-    def test_qaoa(self, w, reps, mixer, solutions):
+    def test_qaoa(self, w, reps, mixer, solutions, simulator):
         """QAOA test"""
         self.log.debug("Testing %s-step QAOA with MaxCut on graph\n%s", reps, w)
 
         qubit_op, _ = self._get_operator(w)
 
-        callback = partial(write_iteration_to_file, 'ideal_sampler')
+        callback = partial(write_iteration_to_file, simulator.options['type'])
 
         qaoa = QAOA(
-            self.sampler,
+            simulator,
             COBYLA(), reps=reps, mixer=mixer,
             callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
 
         x = self._sample_most_likely(result.eigenstate)
-        graph_solution = self._get_graph_solution(x)
-        self.assertIn(graph_solution, solutions)
-
-        callback = partial(write_iteration_to_file, 'sampler_without_noise')
-        qaoa_without_noise = QAOA(
-            self.sampler_without_noise,
-            COBYLA(), reps=reps, mixer=mixer,
-            callback=callback)
-        result_ideal = qaoa_without_noise.compute_minimum_eigenvalue(operator=qubit_op)
-        
-        x = self._sample_most_likely(result_ideal.eigenstate)
         graph_solution = self._get_graph_solution(x)
         self.assertIn(graph_solution, solutions)
 
