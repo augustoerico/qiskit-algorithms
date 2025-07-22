@@ -82,6 +82,19 @@ def write_iteration_to_file(
     with open(file_path, 'a') as f:
         f.write(line)
 
+def write_quasi_probabilities_to_file(sampler_type: str, eigenstate: dict):
+    number_of_states = int(len(eigenstate))
+    
+    line = 'Bitstring,Probability\n'
+    for i in range(number_of_states):
+        entry = format(i, f'0{i}b') + ',' + np.str_(eigenstate[i])
+        line += f'{entry}\n'
+    
+    file_path = results_folder_path.joinpath(f'{sampler_type}-eigenstate.csv')
+    with open(file_path, 'a') as f:
+        f.write(line)
+
+
 def simulators():
     backend_with_noise = AerSimulator.from_backend(
         FakeSherbrooke(), method='statevector',
@@ -339,14 +352,10 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         Returns:
             Binary string as numpy.ndarray of ints.
         """
-        values = list(state_vector.values())
-        n = int(np.log2(len(values)))
-        k = np.argmax(np.abs(values))
-        x = np.zeros(n)
-        for i in range(n):
-            x[i] = k % 2
-            k >>= 1
-        return x
+        number_of_bits = int(np.log2(len(state_vector)))
+        most_likely_state = max(state_vector.items(), key=lambda item: abs(item[1]))[0]
+        bitstring = format(most_likely_state, f"0{number_of_bits}b")[::-1]
+        return np.array([int(b) for b in bitstring], dtype=int)
 
 
 if __name__ == "__main__":
