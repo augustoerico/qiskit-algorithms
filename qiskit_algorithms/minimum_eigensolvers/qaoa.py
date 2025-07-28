@@ -14,7 +14,7 @@
 
 from __future__ import annotations
 
-from typing import Callable, Any
+from typing import Callable, Any, override
 import numpy as np
 
 from qiskit.circuit import QuantumCircuit
@@ -134,6 +134,7 @@ class QAOA(SamplingVQE):
             callback=callback,
         )
 
+    @override
     def _check_operator_ansatz(self, operator: BaseOperator):
         # Recreates a circuit based on operator parameter.
         self.ansatz = QAOAAnsatz(

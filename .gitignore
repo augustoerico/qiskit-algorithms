@@ -127,3 +127,6 @@ venv.bak/
 
 # stestr repostiory
 .stestr/
+
+#
+.venv.old/
