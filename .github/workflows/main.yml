@@ -31,7 +31,7 @@ concurrency:
 
 jobs:
   Checks:
-    # if: github.repository_owner == 'qiskit-community'
+    if: github.repository_owner == 'qiskit-community'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
@@ -166,7 +166,7 @@ jobs:
           name: ${{ matrix.os }}-${{ matrix.python-version }}
           path: ./ci-artifact-data/*
   Monitor_Qiskit_Main:
-    # if: github.repository_owner == 'qiskit-community' && (github.ref == 'refs/heads/main' || github.base_ref == 'main')
+    if: github.repository_owner == 'qiskit-community' && (github.ref == 'refs/heads/main' || github.base_ref == 'main')
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -203,7 +203,7 @@ jobs:
           python-version: ${{ matrix.python-version }}
         if: ${{ !cancelled() }}
   Tutorials:
-    # if: github.repository_owner == 'qiskit-community'
+    if: github.repository_owner == 'qiskit-community'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -250,7 +250,7 @@ jobs:
           name: tutorials${{ matrix.python-version }}
           path: docs/_build/html/artifacts/tutorials.tar.gz
   Deprecation_Messages_and_Coverage:
-    # if: github.repository_owner == 'qiskit-community'
+    if: github.repository_owner == 'qiskit-community'
     needs: [Checks, Algorithms, Tutorials]
     runs-on: ubuntu-latest
     strategy:
