@@ -42,7 +42,9 @@ class QiskitAlgorithmsTestCase(unittest.TestCase, ABC):
     log = None
 
     def setUp(self) -> None:
-        warnings.filterwarnings("default", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=DeprecationWarning)
+        warnings.filterwarnings("ignore", category=PendingDeprecationWarning)
+        warnings.filterwarnings("ignore", category=RuntimeWarning)
         self._started_at = time.time()
         self._class_location = __file__
 
