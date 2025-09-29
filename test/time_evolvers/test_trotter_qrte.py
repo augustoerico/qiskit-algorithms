@@ -1,6 +1,6 @@
 # This code is part of a Qiskit project.
 #
-# (C) Copyright IBM 2021, 2024.
+# (C) Copyright IBM 2021, 2025.
 #
 # This code is licensed under the Apache License, Version 2.0. You may
 # obtain a copy of this license in the LICENSE.txt file in the root directory
@@ -14,6 +14,7 @@
 
 import unittest
 from test import QiskitAlgorithmsTestCase
+
 from ddt import ddt, data, unpack
 import numpy as np
 from scipy.linalg import expm
@@ -23,8 +24,9 @@ from qiskit import QuantumCircuit
 from qiskit.circuit.library import ZGate
 from qiskit.quantum_info import Statevector, Pauli, SparsePauliOp
 from qiskit.circuit import Parameter
-from qiskit.primitives import Estimator
+from qiskit.primitives import StatevectorEstimator
 from qiskit.synthesis import SuzukiTrotter, QDrift
+from qiskit.transpiler.preset_passmanagers import generate_preset_pass_manager
 
 from qiskit_algorithms import TimeEvolutionProblem, TrotterQRTE
 from qiskit_algorithms.utils import algorithm_globals
@@ -80,7 +82,7 @@ class TestTrotterQRTE(QiskitAlgorithmsTestCase):
         evolution_problem = TimeEvolutionProblem(
             operator, time, initial_state, aux_ops, t_param=t_param
         )
-        estimator = Estimator()
+        estimator = StatevectorEstimator()
 
         expected_psi, expected_observables_result = self._get_expected_trotter_qrte(
             operator,
@@ -134,6 +136,12 @@ class TestTrotterQRTE(QiskitAlgorithmsTestCase):
         (
             SparsePauliOp([Pauli("XY"), Pauli("YX")]),
             Statevector([-0.41614684 + 0.0j, 0.0 + 0.0j, 0.0 + 0.0j, 0.90929743 + 0.0j]),
+        ),
+        (
+            SparsePauliOp([Pauli("XY"), Pauli("XX")]),  # Non-commuting case
+            Statevector(
+                [0.291926582 - 0.708073418j, 0.0 + 0.0j, 0.0 + 0.0j, 0.454648713 - 0.454648713j]
+            ),
         ),
         (
             SparsePauliOp([Pauli("ZZ"), Pauli("ZI"), Pauli("IZ")]),
@@ -238,6 +246,36 @@ class TestTrotterQRTE(QiskitAlgorithmsTestCase):
         self.assertEqual(
             expected_circuit.decompose(reps=3), evolution_result.evolved_state.decompose(reps=5)
         )
+
+    def test_transpiler(self):
+        """Test that the transpiler is called"""
+        pass_manager = generate_preset_pass_manager(optimization_level=1, seed_transpiler=42)
+        counts = [0]
+
+        def callback(**kwargs):
+            counts[0] = kwargs["count"]
+
+        operator = SparsePauliOp([Pauli("X"), Pauli("Z")])
+        initial_state = QuantumCircuit(1)
+        time = 1
+        evolution_problem = TimeEvolutionProblem(operator, time, initial_state)
+
+        # Test transpilation without options
+        trotter_qrte = TrotterQRTE(
+            estimator=StatevectorEstimator(),
+            transpiler=pass_manager,
+        )
+        trotter_qrte.evolve(evolution_problem)
+
+        # Test transpiler is called using callback function
+        trotter_qrte = TrotterQRTE(
+            estimator=StatevectorEstimator(),
+            transpiler=pass_manager,
+            transpiler_options={"callback": callback},
+        )
+        trotter_qrte.evolve(evolution_problem)
+
+        self.assertGreater(counts[0], 0)
 
     # pylint: disable=too-many-positional-arguments
     @staticmethod
