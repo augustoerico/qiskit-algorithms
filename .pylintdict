@@ -145,6 +145,7 @@ hopkins
 hoyer
 https
 hyperparameters
+iae
 idx
 im
 imag
@@ -155,6 +156,7 @@ interatomic
 ints
 iprint
 iqft
+isa
 ising
 iteratively
 iz
@@ -162,6 +164,7 @@ izaac
 izz
 jac
 jacobian
+johnson
 jones
 july
 kandala
@@ -237,6 +240,7 @@ numpy
 objval
 observables
 oct
+october
 onodera
 optimizer's
 optimizers
@@ -310,6 +314,7 @@ sanjiv
 sashank
 satisfiability
 satyen
+sbplx
 schrödinger
 schroediger
 schroedinger
@@ -330,17 +335,20 @@ spsa
 sqrt
 statefn
 statevector
+statevectorestimator
 statevectors
 stddev
 stdout
 stefano
 steppable
 stepsize
+steven
 str
 subcircuits
 subclassed
 subclasses
 subcomponents
+subplex
 subspaces
 suzuki
 swappable
@@ -362,8 +370,12 @@ trainability
 transpilation
 transpile
 transpiled
+transpiler
+transpiler's
+transpiling
 trotterization
 trotterized
+tweedledum
 uncompute
 unitaries
 univariate
