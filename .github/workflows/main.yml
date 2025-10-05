@@ -105,23 +105,22 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
   Algorithms:
-    # if: github.repository_owner == 'qiskit-community'
+    if: github.repository_owner == 'qiskit-community'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
       matrix:
         os: [ubuntu-latest]
-        # python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
-        python-version: [3.12]
-        # include:
-        #   - os: macos-latest
-        #     python-version: 3.9
-        #   - os: macos-latest
-        #     python-version: 3.13
-        #   - os: windows-latest
-        #     python-version: 3.9
-        #   - os: windows-latest
-        #     python-version: 3.13
+        python-version: [3.9, '3.10', 3.11, 3.12, 3.13]
+        include:
+          - os: macos-latest
+            python-version: 3.9
+          - os: macos-latest
+            python-version: 3.13
+          - os: windows-latest
+            python-version: 3.9
+          - os: windows-latest
+            python-version: 3.13
     steps:
       - uses: actions/checkout@v5
       - uses: actions/setup-python@v6
