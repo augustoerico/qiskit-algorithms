@@ -105,7 +105,7 @@ jobs:
         if: ${{ !cancelled() }}
         shell: bash
   Algorithms:
-    # if: github.repository_owner == 'qiskit-community'
+    if: github.repository_owner == 'qiskit-community'
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -312,3 +312,53 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: coveralls --service=github
         shell: bash
+  Algorithms_2:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest]
+        python-version: [3.12]
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-python@v6
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip'
+          cache-dependency-path: |
+            setup.py
+            requirements-frozen.txt
+      - uses: ./.github/actions/install-main-dependencies
+        with:
+          os: ${{ matrix.os }}
+          python-version: ${{ matrix.python-version }}
+          qiskit-main: "false"
+        if: ${{ !startsWith(github.ref, 'refs/heads/stable') && !startsWith(github.base_ref, 'stable/') }}
+      - uses: ./.github/actions/install-algorithms
+      - run: make lint
+        shell: bash
+#     - run: make mypy
+#       shell: bash
+      - name: Algorithms Unit Tests under Python ${{ matrix.python-version }}
+        uses: ./.github/actions/run-tests-fakebackends
+        with:
+          os: ${{ matrix.os }}
+          event-name: ${{ github.event_name }}
+          run-slow: ${{ contains(github.event.pull_request.labels.*.name, 'run_slow') }}
+          python-version: ${{ matrix.python-version }}
+        if: ${{ !cancelled() }}
+      - name: Deprecation Messages
+        run: |
+          mkdir ./ci-artifact-data
+          python tools/extract_deprecation.py -file out.txt -output ./ci-artifact-data/alg.dep
+        shell: bash
+      - name: Coverage combine
+        run: |
+          coverage3 combine
+          mv .coverage ./ci-artifact-data/alg.dat
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.python-version == 3.9 }}
+        shell: bash
+      - uses: actions/upload-artifact@v4
+        with:
+          name: ${{ matrix.os }}-${{ matrix.python-version }}
+          path: ./ci-artifact-data/*
