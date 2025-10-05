@@ -104,16 +104,16 @@ def simulators():
     backend_without_noise = deepcopy(backend_with_noise)
     backend_without_noise.set_options(noise_model=None)
 
-    ideal_sampler = StatevectorSampler(options={'type': 'ideal_sampler'})
+    ideal_sampler = StatevectorSampler()
     sampler_without_noise = BackendSampler(
-        backend=backend_without_noise, options={'type': 'sampler_without_noise'})
+        backend=backend_without_noise)
     sampler_with_noise = BackendSampler(
-        backend=backend_with_noise, options={'type': 'sampler_with_noise'})
+        backend=backend_with_noise)
 
     return [
-        ideal_sampler,
-        sampler_without_noise,
-        sampler_with_noise
+        (ideal_sampler, 'ideal_sampler'),
+        (sampler_without_noise, 'sampler_without_noise'),
+        (sampler_with_noise, 'sampler_with_noise')
     ]
 
 @ddt
@@ -147,10 +147,10 @@ class TestQAOA(QiskitAlgorithmsTestCase):
 
         qubit_op, _ = self._get_operator(w)
 
-        callback = partial(write_iteration_to_file, simulator.options['type'])
+        callback = partial(write_iteration_to_file, simulator[1])
 
         qaoa = QAOA(
-            simulator,
+            simulator[0],
             COBYLA(), reps=reps, mixer=mixer,
             callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
