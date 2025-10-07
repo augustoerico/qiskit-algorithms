@@ -159,13 +159,16 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         self.assertIn(graph_solution, solutions)
 
     @idata(
-        [
-            [W1, P1, S1],
-            [W2, P2, S2],
-        ]
+        [*data, simulator] for data, simulator in product(
+            [
+                ['1', W1, P1, S1],
+                ['2', W2, P2, S2],
+            ],
+            simulators()
+        )
     )
     @unpack
-    def test_qaoa_qc_mixer(self, w, prob, solutions):
+    def test_qaoa_qc_mixer(self, dataset, w, prob, solutions, simulator):
         """QAOA test with a mixer as a parameterized circuit"""
         self.log.debug(
             "Testing %s-step QAOA with MaxCut on graph with a mixer as a parameterized circuit\n%s",
@@ -176,12 +179,15 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         optimizer = COBYLA()
         qubit_op, _ = self._get_operator(w)
 
+        results_file_name = f"test_qaoa_qc_mixer-{simulator.options['type']}-{dataset}"
+        callback = partial(write_iteration_to_file, results_file_name)
+
         num_qubits = qubit_op.num_qubits
         mixer = QuantumCircuit(num_qubits)
         theta = Parameter("θ")
         mixer.rx(theta, range(num_qubits))
 
-        qaoa = QAOA(self.sampler, optimizer, reps=prob, mixer=mixer)
+        qaoa = QAOA(simulator, optimizer, reps=prob, mixer=mixer, callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
         x = self._sample_most_likely(result.eigenstate)
         graph_solution = self._get_graph_solution(x)
