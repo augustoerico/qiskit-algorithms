@@ -215,16 +215,20 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         graph_solution = self._get_graph_solution(x)
         self.assertIn(graph_solution, S1)
 
-    def test_qaoa_qc_mixer_no_parameters(self):
+    @data(*simulators())
+    def test_qaoa_qc_mixer_no_parameters(self, simulator):
         """QAOA test with a mixer as a parameterized circuit with zero parameters."""
         qubit_op, _ = self._get_operator(W1)
+
+        results_file_name = f"test_qaoa_qc_mixer_no_parameters-{simulator.options['type']}"
+        callback = partial(write_iteration_to_file, results_file_name)
 
         num_qubits = qubit_op.num_qubits
         mixer = QuantumCircuit(num_qubits)
         # just arbitrary circuit
         mixer.rx(np.pi / 2, range(num_qubits))
 
-        qaoa = QAOA(self.sampler, COBYLA(), reps=1, mixer=mixer)
+        qaoa = QAOA(simulator, COBYLA(), reps=1, mixer=mixer, callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
         # we just assert that we get a result, it is not meaningful.
         self.assertIsNotNone(result.eigenstate)
