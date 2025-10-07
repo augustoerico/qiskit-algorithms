@@ -268,21 +268,34 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         with self.subTest(msg="QAOA 6x6"):
             self.assertIn(graph_solution, {"010101", "101010"})
 
-    @idata([[W2, S2, None], [W2, S2, [0.0, 0.0]], [W2, S2, [1.0, 0.8]]])
+    @idata(
+        [*data, simulator] for data, simulator in product(
+            [
+                ["1", W2, S2, None],
+                ["2", W2, S2, [0.0, 0.0]],
+                ["3", W2, S2, [1.0, 0.8]]
+            ],
+            simulators()
+        )
+    )
     @unpack
-    def test_qaoa_initial_point(self, w, solutions, init_pt):
+    def test_qaoa_initial_point(self, dataset, w, solutions, init_pt, simulator):
         """Check first parameter value used is initial point as expected"""
         qubit_op, _ = self._get_operator(w)
 
         first_pt = []
 
+        results_file_name = f"test_qaoa_initial_point-{simulator.options['type']}-{dataset}"
+        callback = partial(write_iteration_to_file, results_file_name)
+
         def cb_callback(eval_count, parameters, mean, metadata):
+            callback(eval_count, parameters, mean, metadata)
             nonlocal first_pt
             if eval_count == 1:
                 first_pt = list(parameters)
 
         qaoa = QAOA(
-            self.sampler,
+            simulator,
             COBYLA(),
             initial_point=init_pt,
             callback=cb_callback,
