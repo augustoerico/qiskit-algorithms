@@ -315,13 +315,18 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         with self.subTest("Solution"):
             self.assertIn(graph_solution, solutions)
 
-    def test_qaoa_random_initial_point(self):
+    @data(*simulators())
+    def test_qaoa_random_initial_point(self, simulator):
         """QAOA random initial point"""
         w = rx.adjacency_matrix(
             rx.undirected_gnp_random_graph(5, 0.5, seed=algorithm_globals.random_seed)
         )
         qubit_op, _ = self._get_operator(w)
-        qaoa = QAOA(self.sampler, NELDER_MEAD(disp=True), reps=2)
+
+        results_file_name = f"test_qaoa_random_initial_point-{simulator.options['type']}"
+        callback = partial(write_iteration_to_file, results_file_name)
+
+        qaoa = QAOA(simulator, NELDER_MEAD(disp=True), reps=2, callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
 
         self.assertLess(result.eigenvalue, -0.97)
