@@ -233,12 +233,17 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         # we just assert that we get a result, it is not meaningful.
         self.assertIsNotNone(result.eigenstate)
 
-    def test_change_operator_size(self):
+    @data(*simulators())
+    def test_change_operator_size(self, simulator):
         """QAOA change operator size test"""
         qubit_op, _ = self._get_operator(
             np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]])
         )
-        qaoa = QAOA(self.sampler, COBYLA(), reps=1)
+
+        results_file_name = f"test_change_operator_size-{simulator.options['type']}"
+        callback = partial(write_iteration_to_file, results_file_name)
+
+        qaoa = QAOA(simulator, COBYLA(), reps=1, callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
         x = self._sample_most_likely(result.eigenstate)
         graph_solution = self._get_graph_solution(x)
