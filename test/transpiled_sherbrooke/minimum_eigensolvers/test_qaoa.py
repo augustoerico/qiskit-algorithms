@@ -331,15 +331,20 @@ class TestQAOA(QiskitAlgorithmsTestCase):
 
         self.assertLess(result.eigenvalue, -0.97)
 
-    def test_optimizer_scipy_callable(self):
+    @data(*simulators())
+    def test_optimizer_scipy_callable(self, simulator):
         """Test passing a SciPy optimizer directly as callable."""
+        results_file_name = f"test_optimizer_scipy_callable-{simulator.options['type']}"
+        callback = partial(write_iteration_to_file, results_file_name)
+        
         w = rx.adjacency_matrix(
             rx.undirected_gnp_random_graph(5, 0.5, seed=algorithm_globals.random_seed)
         )
         qubit_op, _ = self._get_operator(w)
         qaoa = QAOA(
-            self.sampler,
+            simulator,
             partial(scipy_minimize, method="Nelder-Mead", options={"maxiter": 2}),
+            callback=callback
         )
         result = qaoa.compute_minimum_eigenvalue(qubit_op)
         self.assertEqual(result.cost_function_evals, 5)
