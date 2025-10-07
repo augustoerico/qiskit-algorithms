@@ -73,13 +73,13 @@ results_folder_path: Path = \
     Path(__file__).parent.joinpath('results/test_qaoa')
 
 def write_iteration_to_file(
-        sampler_type: str,
+        file_name: str,
         eval_count: int, params: List[float],
         value: np.complex128, _):
     line = f'{eval_count},' \
         + f'{','.join(str(p) for p in params)},' \
         + f'{np.str_(value)}\n'
-    file_path = results_folder_path.joinpath(f'{sampler_type}.csv')
+    file_path = results_folder_path.joinpath(f'{file_name}.csv')
     with open(file_path, 'a') as f:
         f.write(line)
 
@@ -132,20 +132,21 @@ class TestQAOA(QiskitAlgorithmsTestCase):
     @idata(
         [*data, simulator] for data, simulator in product(
             [
-                [W1, P1, M1, S1],
-                [W2, P2, M2, S2],
+                ['1', W1, P1, M1, S1],
+                ['2', W2, P2, M2, S2],
             ],
             simulators()
         )
     )
     @unpack
-    def test_qaoa(self, w, reps, mixer, solutions, simulator):
+    def test_qaoa(self, dataset, w, reps, mixer, solutions, simulator):
         """QAOA test"""
         self.log.debug("Testing %s-step QAOA with MaxCut on graph\n%s", reps, w)
 
         qubit_op, _ = self._get_operator(w)
 
-        callback = partial(write_iteration_to_file, simulator.options['type'])
+        results_file_name = f"test_qaoa-{simulator.options['type']}-{dataset}"
+        callback = partial(write_iteration_to_file, results_file_name)
 
         qaoa = QAOA(
             simulator,
