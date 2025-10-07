@@ -19,7 +19,7 @@ from test import QiskitAlgorithmsTestCase
 
 import numpy as np
 import rustworkx as rx
-from ddt import ddt, idata, unpack
+from ddt import ddt, idata, unpack, data
 from scipy.optimize import minimize as scipy_minimize
 
 from qiskit import QuantumCircuit
@@ -193,7 +193,8 @@ class TestQAOA(QiskitAlgorithmsTestCase):
         graph_solution = self._get_graph_solution(x)
         self.assertIn(graph_solution, solutions)
 
-    def test_qaoa_qc_mixer_many_parameters(self):
+    @data(*simulators())
+    def test_qaoa_qc_mixer_many_parameters(self, simulator):
         """QAOA test with a mixer as a parameterized circuit with the num of parameters > 1."""
         optimizer = COBYLA()
         qubit_op, _ = self._get_operator(W1)
@@ -204,7 +205,10 @@ class TestQAOA(QiskitAlgorithmsTestCase):
             theta = Parameter("θ" + str(i))
             mixer.rx(theta, range(num_qubits))
 
-        qaoa = QAOA(self.sampler, optimizer, reps=2, mixer=mixer)
+        results_file_name = f"test_qaoa_qc_mixer_many_parameters-{simulator.options['type']}"
+        callback = partial(write_iteration_to_file, results_file_name)
+
+        qaoa = QAOA(simulator, optimizer, reps=2, mixer=mixer, callback=callback)
         result = qaoa.compute_minimum_eigenvalue(operator=qubit_op)
         x = self._sample_most_likely(result.eigenstate)
         self.log.debug(x)
