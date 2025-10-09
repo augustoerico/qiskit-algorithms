@@ -72,6 +72,7 @@ CUSTOM_SUPERPOSITION = [1 / np.sqrt(15)] * 15 + [0]
 results_folder_path: Path = \
     Path(__file__).parent.joinpath('results/test_qaoa')
 
+
 def write_iteration_to_file(
         file_name: str,
         eval_count: int, params: List[float],
@@ -95,7 +96,6 @@ def write_quasi_probabilities_to_file(sampler_type: str, eigenstate: dict):
     with open(file_path, 'a') as f:
         f.write(line)
 
-
 def simulators():
     backend_with_noise = AerSimulator.from_backend(
         FakeSherbrooke(), method='statevector')
@@ -114,6 +114,7 @@ def simulators():
         sampler_without_noise,
         sampler_with_noise
     ]
+
 
 @ddt
 class TestQAOA(QiskitAlgorithmsTestCase):
