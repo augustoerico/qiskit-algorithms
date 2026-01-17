@@ -26,15 +26,11 @@ def main():
                 x_col = 0
                 y1_col = 1
 
-                _, axis_1 = pyplot.subplots()
+                _, axis = pyplot.subplots()
 
-                axis_1.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
-                
-                axis_2 = axis_1.twinx()
-                axis_2.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
-
-                axis_3 = axis_1.twinx()
-                axis_3.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
+                axis.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
+                axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
+                axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
 
                 pyplot.savefig(f"{results_path}/graphs/{test_case}-{i + 1}.png")
 
@@ -49,15 +45,11 @@ def main():
             x_col = 0
             y1_col = 1
 
-            _, axis_1 = pyplot.subplots()
+            _, axis = pyplot.subplots()
 
-            axis_1.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
-            
-            axis_2 = axis_1.twinx()
-            axis_2.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
-
-            axis_3 = axis_1.twinx()
-            axis_3.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
+            axis.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
+            axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
+            axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
                 
             pyplot.savefig(f"{results_path}/graphs/{test_case}.png")
 
