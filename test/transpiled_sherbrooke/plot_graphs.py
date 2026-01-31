@@ -1,5 +1,6 @@
 from pandas import read_csv
 from matplotlib import pyplot
+from pathlib import Path
 
 results_path = 'test/transpiled_sherbrooke/minimum_eigensolvers/results/test_qaoa'
 test_cases = [
@@ -32,7 +33,9 @@ def main():
                 axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
                 axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
 
-                pyplot.savefig(f"{results_path}/graphs/{test_case}-{i + 1}.png")
+                graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}-{i + 1}.png")
+                graph_path.parent.mkdir(parents=True, exist_ok=True)
+                pyplot.savefig(graph_path)
 
         else:
             path_1 = f'{results_path}/{test_case}-ideal_sampler.csv'
@@ -50,8 +53,10 @@ def main():
             axis.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
             axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
             axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
-                
-            pyplot.savefig(f"{results_path}/graphs/{test_case}.png")
+
+            graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}.png")
+            graph_path.parent.mkdir(parents=True, exist_ok=True)
+            pyplot.savefig(graph_path)                
 
 
 if __name__ == "__main__":
