@@ -23,19 +23,18 @@ def main():
                 dataframe_1 = read_csv(path_1, header=None)
                 dataframe_2 = read_csv(path_2, header=None)
                 dataframe_3 = read_csv(path_3, header=None)
-                
+
                 x_col = 0
-                y1_col = 1
+                for y_col in range(1, len(dataframe_1.columns) - 1):
+                    _, axis = pyplot.subplots()
 
-                _, axis = pyplot.subplots()
+                    axis.plot(dataframe_1[x_col], dataframe_1[y_col], label='Ideal Sampler', color='blue')
+                    axis.plot(dataframe_2[x_col], dataframe_2[y_col], label='Sampler without Noise', color='orange')
+                    axis.plot(dataframe_3[x_col], dataframe_3[y_col], label='Sampler with Noise', color='green')
 
-                axis.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
-                axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
-                axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
-
-                graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}-{i + 1}.png")
-                graph_path.parent.mkdir(parents=True, exist_ok=True)
-                pyplot.savefig(graph_path)
+                    graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}-{i + 1}_col-{y_col}.png")
+                    graph_path.parent.mkdir(parents=True, exist_ok=True)
+                    pyplot.savefig(graph_path)
 
         else:
             path_1 = f'{results_path}/{test_case}-ideal_sampler.csv'
@@ -46,17 +45,17 @@ def main():
             dataframe_3 = read_csv(path_3, header=None)
 
             x_col = 0
-            y1_col = 1
 
-            _, axis = pyplot.subplots()
+            for y_col in range(1, len(dataframe_1.columns) - 1):
+                _, axis = pyplot.subplots()
 
-            axis.plot(dataframe_1[x_col], dataframe_1[y1_col], label='Ideal Sampler', color='blue')
-            axis.plot(dataframe_2[x_col], dataframe_2[y1_col], label='Sampler without Noise', color='orange')
-            axis.plot(dataframe_3[x_col], dataframe_3[y1_col], label='Sampler with Noise', color='green')
+                axis.plot(dataframe_1[x_col], dataframe_1[y_col], label='Ideal Sampler', color='blue')
+                axis.plot(dataframe_2[x_col], dataframe_2[y_col], label='Sampler without Noise', color='orange')
+                axis.plot(dataframe_3[x_col], dataframe_3[y_col], label='Sampler with Noise', color='green')
 
-            graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}.png")
-            graph_path.parent.mkdir(parents=True, exist_ok=True)
-            pyplot.savefig(graph_path)                
+                graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}_col-{y_col}.png")
+                graph_path.parent.mkdir(parents=True, exist_ok=True)
+                pyplot.savefig(graph_path)                
 
 
 if __name__ == "__main__":
