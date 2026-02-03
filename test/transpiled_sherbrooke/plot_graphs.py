@@ -31,6 +31,7 @@ def main():
                     axis.plot(dataframe_1[x_col], dataframe_1[y_col], label='Ideal Sampler', color='blue')
                     axis.plot(dataframe_2[x_col], dataframe_2[y_col], label='Sampler without Noise', color='orange')
                     axis.plot(dataframe_3[x_col], dataframe_3[y_col], label='Sampler with Noise', color='green')
+                    axis.legend()
 
                     graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}-{i + 1}_col-{y_col}.png")
                     graph_path.parent.mkdir(parents=True, exist_ok=True)
@@ -52,6 +53,7 @@ def main():
                 axis.plot(dataframe_1[x_col], dataframe_1[y_col], label='Ideal Sampler', color='blue')
                 axis.plot(dataframe_2[x_col], dataframe_2[y_col], label='Sampler without Noise', color='orange')
                 axis.plot(dataframe_3[x_col], dataframe_3[y_col], label='Sampler with Noise', color='green')
+                axis.legend()
 
                 graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}_col-{y_col}.png")
                 graph_path.parent.mkdir(parents=True, exist_ok=True)
