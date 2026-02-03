@@ -36,6 +36,7 @@ def main():
                     graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}-{i + 1}_col-{y_col}.png")
                     graph_path.parent.mkdir(parents=True, exist_ok=True)
                     pyplot.savefig(graph_path)
+                    pyplot.close()
 
         else:
             path_1 = f'{results_path}/{test_case}-ideal_sampler.csv'
@@ -57,7 +58,8 @@ def main():
 
                 graph_path = Path(f"{results_path}/graphs/{test_case}/{test_case}_col-{y_col}.png")
                 graph_path.parent.mkdir(parents=True, exist_ok=True)
-                pyplot.savefig(graph_path)                
+                pyplot.savefig(graph_path)
+                pyplot.close()               
 
 
 if __name__ == "__main__":
