@@ -39,7 +39,7 @@ from typing import List
 
 from qiskit.primitives.backend_sampler import BackendSampler
 from qiskit_aer import AerSimulator
-from qiskit_ibm_runtime.fake_provider.backends import FakeSherbrooke
+from qiskit_ibm_runtime.fake_provider.backends import FakeSherbrooke, FakeBrisbane
 from itertools import product
 
 W1 = np.array([[0, 1, 0, 1], [1, 0, 1, 0], [0, 1, 0, 1], [1, 0, 1, 0]])
@@ -98,7 +98,7 @@ def write_quasi_probabilities_to_file(sampler_type: str, eigenstate: dict):
 
 def simulators():
     backend_with_noise = AerSimulator.from_backend(
-        FakeSherbrooke(), method='statevector')
+        FakeBrisbane(), method='statevector')
 
     backend_without_noise = deepcopy(backend_with_noise)
     backend_without_noise.set_options(noise_model=None)
